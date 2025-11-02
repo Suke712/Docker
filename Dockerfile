@@ -5,13 +5,13 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install uv (packaging and dependency manager)
-RUN pip install uv==0.9.4
+RUN pip install --no-cache-dir uv
 
 # Copy only dependency files first for build cache optimization
-COPY pyproject.toml uv.lock ./
+COPY requirements.txt ./
 
 # Install dependencies directly into system Python in the container
-RUN uv pip install --system
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of your source code
 COPY app.py ./
