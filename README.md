@@ -105,7 +105,32 @@ Packages the app + dependencies in an isolated environment.
 
 ---
 
-## 9. Docker Registry
+## 9. Docker Compose
+Docker Compose is a tool for defining and running multi-container applications. Instead of manually running multiple docker run commands, Compose allows you to define all your containers, their configurations, networks, and volumes in a single YAML file, commonly named compose.yaml. This file defines each service of your application, including how to build images or which existing images to use, ports to expose, environment variables, and volumes.
+
+---
+
+## 10. Volumes
+Docker volumes are persistent data storage managed by Docker that exist independently from a container’s lifecycle, enabling data to be saved and reused even if the container is stopped, removed, or recreated. Volumes store data outside the container's writable layer in a Docker-managed directory on the host, ensuring durability and separation between application logic and data.
+
+**Types:**
+  - Named Volumes: Explicitly created and referenced by name, ideal for persistent, reusable storage.
+  - Anonymous Volumes: Created without a name, useful for temporary data but harder to manage.
+
+**Bind Mounts:**
+Bind mounts are another way to persist data by directly mounting a file or directory from the host machine into a container using its absolute path. Unlike volumes, bind mounts rely on the host machine’s filesystem and directory structure.
+
+---
+
+## 11. Docker Network
+Docker networking enables containers to communicate with each other, the Docker host, and external networks by managing how network traffic is routed and isolated. Each container runs in its own network namespace, giving it an isolated network stack including interfaces and IP addresses.
+
+**Common Docker Network Types:**
+- Bridge (default): Creates an isolated internal network on the host for containers to communicate. Requires port mapping to expose containers externally.
+- Host: Shares the host’s network stack with containers, removing network isolation. Useful for performance-critical applications but less secure.
+- None: Disables networking for a container, providing complete isolation.
+
+## 12. Docker Registry
 
 System for storing and distributing images.
 
@@ -125,46 +150,198 @@ System for storing and distributing images.
 
 ---
 
-## 10. Essential Docker Commands
+## 13. Essential Docker Commands
 
-- **Build an image:**
+### IMAGES
+
+- **List all local images**
     ```
-    docker build -t my-app .
+    docker images
     ```
-- **Tag an image for a repository:**
+
+- **Delete an image**
     ```
-    docker tag my-app username/my-app:latest
+    docker rmi <image_id_or_name>
     ```
-- **Run container from image, map port:**
+
+- **Remove unused images**
     ```
-    docker run -d -p 8080:80 my-app
+    docker image prune
+    ```
+
+- **Build an image from a Dockerfile**
+    ```
+    docker build -t <image_name>:<version> .
+    ```
+    _Version tag is optional_
+
+- **Build image without cache**
+    ```
+    docker build -t <image_name>:<version> . --no-cache
+    ```
+
+### CONTAINERS
+
+- **List all local containers (running & stopped)**
+    ```
+    docker ps -a
+    ```
+
+- **List all running containers**
+    ```
+    docker ps
+    ```
+
+- **Create & run a new container**
+    ```
+    docker run <image_name>
+    ```
+    _If image not available locally, it’ll be pulled from DockerHub automatically._
+
+- **Run container in background**
+    ```
+    docker run -d <image_name>
     ```
     | Flag | Meaning            | What Happens                                      |
     |------|--------------------|---------------------------------------------------|
     | -d   | Detached mode      | Runs container in background (returns prompt)     |
     | none | Attached (default) | Runs container in terminal (shows logs)           |
-- **List running containers:**
+
+- **Run container with custom name**
     ```
-    docker ps
+    docker run --name <container_name> <image_name>
     ```
-- **Stop and remove a container:**
+
+- **Port binding**
     ```
-    docker stop <container>
-    docker rm <container>
+    docker run -p <host_port>:<container_port> <image_name>
     ```
-- **Remove an image:**
+
+- **Set environment variables**
     ```
-    docker rmi my-app
+    docker run -e <VAR_NAME>=<value> <image_name>
     ```
-- **List images and volumes:**
+
+- **Run interactive shell in a running container**
     ```
-    docker images
+    docker exec -it <container_id_or_name> /bin/bash
+    ```
+
+### Docker Compose
+
+- **To start all the services defined in your compose.yaml file**
+    ```
+    docker compose up
+    ```
+    _for custom .yaml file_
+    ```
+    docker compose -f fileName.yaml up -d
+    ```
+
+- **To stop and remove the running services**
+    ```
+    docker compose down 
+    ```
+    _for custom .yaml file_
+    ```
+    docker compose -f fileName.yaml down
+    ```
+
+### DOCKER HUB
+
+- **Pull an image from DockerHub**
+    ```
+    docker pull <image_name>
+    ```
+
+- **Publish an image to DockerHub**
+    ```
+    docker push <username>/<image_name>
+    ```
+
+- **Login into DockerHub**
+    ```
+    docker login -u <username>
+    ```
+    _Or simply:_
+    ```
+    docker login
+    ```
+
+- **Logout from DockerHub**
+    ```
+    docker logout
+    ```
+
+- **Search for an image on DockerHub**
+    ```
+    docker search <keyword>
+    ```
+
+### VOLUMES
+
+- **List all volumes**
+    ```
     docker volume ls
     ```
-- **See container logs:**
+
+- **Create new named volume**
     ```
-    docker logs <container>
+    docker volume create <volume_name>
     ```
 
+- **Delete a named volume**
+    ```
+    docker volume rm <volume_name>
+    ```
 
+- **Mount named volume with running container**
+    ```
+    docker run --volume <volume_name>:<container_path> <image_name>
+    ```
+    _or using `--mount`:_
+    ```
+    docker run --mount type=volume,src=<volume_name>,dest=<container_path> <image_name>
+    ```
 
+- **Mount anonymous volume**
+    ```
+    docker run --volume <container_path> <image_name>
+    ```
+
+- **Create a bind mount**
+    ```
+    docker run --volume <host_path>:<container_path> <image_name>
+    ```
+    _or using `--mount`:_
+    ```
+    docker run --mount type=bind,src=<host_path>,dest=<container_path> <image_name>
+    ```
+
+- **Remove unused local volumes**
+    ```
+    docker volume prune
+    ```
+    _This removes anonymous (unused) volumes._
+
+### NETWORK
+
+- **List all networks**
+    ```
+    docker network ls
+    ```
+
+- **Create a network**
+    ```
+    docker network create <network_name>
+    ```
+
+- **Remove a network**
+    ```
+    docker network rm <network_name>
+    ```
+
+- **Remove all unused networks**
+    ```
+    docker network prune
+    ```
